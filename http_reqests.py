@@ -1,10 +1,12 @@
+#usr/bin/python
+
 import sys
 import requests as req
 import re
 
 # Find payload in result 
 def findData(pattern, data):
-    match=re.search(pattern, data, re.M|re.I)
+    match=re.search(pattern, data)
     if match:
         print match.group()
 
@@ -36,7 +38,7 @@ def request(reqType, url, payload, data, format):
         headers = {"content-type":formatT}
         return req.post(url, params=payload, data=data, headers=headers).text
 
-if _name_=='__main__':
+if __name__=='__main__':
     # TODO take regex as input?
     # plan is to automate xss
     # find input fields/parameterized urls with burp
@@ -48,7 +50,7 @@ if _name_=='__main__':
     dataformat=0
     data=''
     if len(sys.argv)<3:
-        print 'usage: [url] [payload] [data] [format]'
+        print 'usage: [url] [payload] ([data] [format])'
         print 'format: 0=txt, 1=json, 2=xml'
         quit()
     elif len(sys.argv)>3:
@@ -64,7 +66,7 @@ if _name_=='__main__':
     print payload
     
     # Make regex
-    regex=re.compile(re.escape(payload))
+    regex=re.compile(re.escape(payload), re.M|re.I)
     
     # TODO
     # convert payload to different encoding 
@@ -74,12 +76,12 @@ if _name_=='__main__':
     for p in payloads:
         # TODO change resp to html content 
         resp=request(reqType, url, payload, data, format)
-        print resp
+        #print resp
         
         # TODO
         # do regex to extract data from response (eg. payload)
         # store if regex found
-        injection = findData(resp, regex)
+        injection = findData(regex, resp)
         if injection:
             # things to store:
             # url, payload, result
@@ -87,6 +89,7 @@ if _name_=='__main__':
             
     # TODO
     # go through usable results
+    linkList=[1]
     linkList[0]="<li>"
     for x in range(len(useable)):
         html=generateHTML(useable[x])
@@ -97,6 +100,12 @@ if _name_=='__main__':
         # TODO build HTML with results
         # format: link 1,2,3...
         # link contains url, payload as txt and result as HTML 
-        linkList.push("<a href="+filename+">"+x+"</a>")
+        linkList.append("<a href="+filename+">"+x+"</a>")
    
-    linkList.push("</li>")
+    linkList.append("</li>")
+    
+    # TODO write to file!
+    a=""
+    for i in linkList:
+    	a+=i
+    print a
